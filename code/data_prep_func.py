@@ -11,7 +11,7 @@ import numpy as np
 import re
 
 from sklearn.feature_extraction.text import CountVectorizer
-# TODO: Used Tfidf vectorizer
+# TODO: Use Tfidf vectorizer
 
 # cd D:\\DDox\\Statistical Learning\\Project\\SentimentAnalysisProject\\code
 
