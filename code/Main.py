@@ -6,7 +6,7 @@ Created on Fri Apr 21 09:19:55 2023
 """
 
 # The main code to run will wrap the code in this file in a "main" function 
-
+import data_prep_func
 
 ### These need to be in data_prep_func
 def get_data(filename):
@@ -67,19 +67,23 @@ def goodness_of_fit():
 
 
 # Get data
-data = get_data("example.csv")
+data = data_prep_func.get_data("Twitter_Data")
+
+# TODO: remove this. Just making sure the rest runs.
+data = data.head(100)
 
 
+data = data_prep_func.create_trainable_feature(data)
 # TBH, probably want to preprocess in a different file and save
 
 # Clean data
-data = clean_data(data)
+#data = clean_data(data)
 
 # Split into n-grams (start with unigrams at first)
-data = n_grams(data)
+#data = n_grams(data)
 
 # Vectorize n_grams (Probably count at first)
-data = create_vectorized_column(data)
+#data = create_vectorized_column(data)
 
 # Run model on data
 model = create_and_train_model(train_data["vac_column"], train_data["targ"])
