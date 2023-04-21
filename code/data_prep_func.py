@@ -12,6 +12,7 @@ import re
 
 from sklearn.feature_extraction.text import CountVectorizer
 # TODO: Use Tfidf vectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # cd D:\\DDox\\Statistical Learning\\Project\\SentimentAnalysisProject\\code
 
@@ -23,21 +24,79 @@ def get_data(f_name): # = "Twitter_Data"):
     df = pd.read_csv(path + f_name + ".csv", sep = ",")    
     return df
 
+def clean_df(df, text_col = "clean_text"):
+    # First, remove nans
+    df =  df.dropna()
+    
+    df["happy_col"] = clean_feature_col(df[text_col])
+    
+    return df
 
-def clean_data(data):
-    # TODO implement this in a data_prep_func file
+
+def clean_feature_col(dirty_col):        
     # Probably need to remove stop words and have abbreviation library
+    dirty_col = vec_space_replacements(dirty_col)
+    dirty_col = vec_no_space_replacements(dirty_col)
+    
+    # Remove stop words next
+    dirty_col = vec_remove_stops(dirty_col)
     
     
-    return
+    # Probably design a list replacement thing in order to deal with abbr
+    
+    
+    return dirty_col
 
 def single_unigram(row):
     row_list = row.split(" ")
     return row_list
 
 def vectorized_single_unigrams(col):
-    #return np.vectorize(single_unigram)(col) #TODO: fix setting an array element with sequence
+    # return np.vectorize(single_unigram)(col) #TODO: fix setting an array element with sequence
     return [single_unigram(c) for c in col]
+
+
+def do_replacements(row_text, replacement, pat):
+    return re.sub(pattern = pat, repl = replacement, string = row_text)
+   
+def vec_space_replacements(col):
+    reps = []
+    
+    pat = re.compile(" |\\n|\n|\.|,") 
+    
+    # Currying for the curious
+    vec_func = np.vectorize(lambda row_text: do_replacements(row_text, " ", pat))
+    
+    return vec_func(col)
+    
+   
+def vec_no_space_replacements(col):
+    reps = []
+    # Need to deal with [0-9]+
+    
+    pat = re.compile("\"|\'|\”|\“|’|‘") 
+    
+    # Currying for the curious
+    vec_func = np.vectorize(lambda row_text: do_replacements(row_text, "", pat))
+    
+    return vec_func(col)
+
+
+def vec_remove_stops(col):
+    
+    stop_words_list = ["((?<=\W)|(?<=\A))" + "the", 
+                       "a", 
+                       "an" + "(?=\W|\Z)"]
+    
+    stop_words_str = "(?=\W|\Z)|((?<=\W)|(?<=\A))".join(stop_words_list)
+    
+    pat = re.compile(stop_words_str) 
+    
+    # Currying for the curious
+    vec_func = np.vectorize(lambda row_text: do_replacements(row_text, "", pat))
+    
+    return vec_func(col)
+
 
 # No need. Vectorizer does that for us... breaking into list for preprocessing is good though...
 def n_grams(col, n = 1):
@@ -55,11 +114,11 @@ def create_vectorized_column(col):
     # Note: vectorizer needs to be trained on only training data
     # Note: Start with count vectorizer for simplicity sake, but probably want
     #   to see if word2vec or glove does better
-    vectorizer = CountVectorizer()
+    vectorizer = CountVectorizer() #TfidfVectorizer()
     vec_col = vectorizer.fit_transform(col)
     
     #TODO: Make sure to return vectorizer at some point 
-    return vec_col
+    return vec_col, vectorizer
 
 def save_data(df, filename):
     # TODO: implement this in a data_prep_func file
@@ -73,16 +132,22 @@ def create_trainable_feature(df, col = "clean_text"):
     return df
 
 
+# TODO: Remove punctuation and special characters.  - Started, not finished
+# TODO: Build out stop word library
+# TODO: Build up regex for abbreviation. Do I want to use Levenshtein distances?
+# TODO: Save preprocessed data
 
 #Testing my functions
 #df = get_data("Twitter_Data")
 
-#head_df = df.head(100)
+#head_df = df.head(5000)
 
 
 #head_df["feature"] = create_vectorized_column(head_df["clean_text"])
 
+#col = vec_space_replacements(head_df["clean_text"])
+#col1 = vec_no_space_replacements(head_df["clean_text"])
+#col = clean_feature_col(head_df["clean_text"])
 
 
-
-
+#cleaner_df = clean_df(head_df)
