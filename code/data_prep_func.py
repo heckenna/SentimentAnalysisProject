@@ -10,9 +10,12 @@ import numpy as np
 
 import re
 
+from sklearn.model_selection import train_test_split
+
+# Vectorizer # TODO: Use Tfidf vectorizer
 from sklearn.feature_extraction.text import CountVectorizer
-# TODO: Use Tfidf vectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer 
+
 
 # cd D:\\DDox\\Statistical Learning\\Project\\SentimentAnalysisProject\\code
 
@@ -24,9 +27,13 @@ def get_data(f_name): # = "Twitter_Data"):
     df = pd.read_csv(path + f_name + ".csv", sep = ",")    
     return df
 
+# Need to clean the dataframe and create a column that is ready to be vectorized
+# This will probably take a while to run, so make sure to save cleaned data
 def clean_df(df, text_col = "clean_text"):
     # First, remove nans
     df =  df.dropna()
+    
+    #TODO: Need to drop empty strings as well
     
     df["happy_col"] = clean_feature_col(df[text_col])
     
@@ -42,7 +49,7 @@ def clean_feature_col(dirty_col):
     dirty_col = vec_remove_stops(dirty_col)
     
     
-    # Probably design a list replacement thing in order to deal with abbr
+    # Probably design a list replacement thing in order to deal with abbreviations...
     
     
     return dirty_col
@@ -56,6 +63,7 @@ def vectorized_single_unigrams(col):
     return [single_unigram(c) for c in col]
 
 
+### Theis set of functions replaces certain elements with spaces or deletes them
 def do_replacements(row_text, replacement, pat):
     return re.sub(pattern = pat, repl = replacement, string = row_text)
    
@@ -81,14 +89,18 @@ def vec_no_space_replacements(col):
     
     return vec_func(col)
 
-
 def vec_remove_stops(col):
     
-    stop_words_list = ["((?<=\W)|(?<=\A))" + "the", 
+    stop_words_list = ["(?=[\W\Z])" + "the", 
                        "a", 
-                       "an" + "(?=\W|\Z)"]
+                       "an" + "(?<=[\W\A])"]
     
-    stop_words_str = "(?=\W|\Z)|((?<=\W)|(?<=\A))".join(stop_words_list)
+    # Take list and turn into string which can be used for regex pattern matching
+    #   The "|" means "or"
+    #   The stuff in parentheses says "I want to match the word 'an' not any 
+    #       time I see 'an' together inside a word"
+    #       (for example, dont remove 'an' from 'any')
+    stop_words_str = "(?=[\W\Z])|(?<=[\W\A])".join(stop_words_list)
     
     pat = re.compile(stop_words_str) 
     
@@ -120,9 +132,11 @@ def create_vectorized_column(col):
     #TODO: Make sure to return vectorizer at some point 
     return vec_col, vectorizer
 
-def save_data(df, filename):
+def save_data(df, f_name):
     # TODO: implement this in a data_prep_func file
     # This can be used to save preprocessed data
+    path = "..\\data\\"
+    
     return
 
 
@@ -132,13 +146,34 @@ def create_trainable_feature(df, col = "clean_text"):
     return df
 
 
+def train_test_val_split(df, random_state= 9632, targ = "category"):
+    # Using random state in order to be deterministically random
+    train, test = train_test_split(df, 
+                                   test_size=0.4, 
+                                   random_state= 9632, 
+                                   stratify = df[targ])
+    test, val = train_test_split(test, 
+                                 test_size=0.5, 
+                                 random_state= 9632, 
+                                 stratify = test[targ])
+    return train, test, val
+    
+
+
+# TODO: Train-test-validation split
 # TODO: Remove punctuation and special characters.  - Started, not finished
 # TODO: Build out stop word library
 # TODO: Build up regex for abbreviation. Do I want to use Levenshtein distances?
 # TODO: Save preprocessed data
 
+
+
 #Testing my functions
-#df = get_data("Twitter_Data")
+df = get_data("Twitter_Data")
+
+df = df.dropna()
+
+train_df, test_df, val_df = train_test_val_split(df)
 
 #head_df = df.head(5000)
 
