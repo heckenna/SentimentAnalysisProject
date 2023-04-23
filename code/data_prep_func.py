@@ -16,15 +16,27 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer 
 
+# Word forms...
+from nltk.stem.wordnet import WordNetLemmatizer
+
+
+
 
 # cd D:\\DDox\\Statistical Learning\\Project\\SentimentAnalysisProject\\code
 
 # Functions for data preperation
+
+### File load or save
 def get_data(f_name): # = "Twitter_Data"):
     path = "..\\data\\"
     
-    #TODO implement this in a data_prep_func fie
     df = pd.read_csv(path + f_name + ".csv", sep = ",")    
+    return df
+
+def save_data(df, f_name):
+    path = "..\\data\\"
+    
+    df.to_csv(path + f_name, index = False)
     return df
 
 # Need to clean the dataframe and create a column that is ready to be vectorized
@@ -35,7 +47,10 @@ def clean_df(df, text_col = "clean_text"):
     
     #TODO: Need to drop empty strings as well
     
-    df["happy_col"] = clean_feature_col(df[text_col])
+    
+    # TODO: Deal with word forms & abbreviations
+    
+    df["vectorizable_text"] = clean_feature_col(df[text_col])
     
     return df
 
@@ -49,11 +64,70 @@ def clean_feature_col(dirty_col):
     dirty_col = vec_remove_stops(dirty_col)
     
     
-    # Probably design a list replacement thing in order to deal with abbreviations...
+    #### Probably design a list replacement thing in order to deal with abbreviations...
+    tokenized_col = vectorized_single_unigrams(dirty_col)
     
     
-    return dirty_col
+    # Deal with different word forms
+    tokenized_col = lemmatize_col(tokenized_col)
+    
+    # Make substitutions myself
+    tokenized_col = make_word_subs_col(tokenized_col)
+    
+    clean_col = vec_list_to_string(tokenized_col)
+    return clean_col #" ".join(tokenized_col)
 
+
+#### List to string
+def vec_list_to_string(col):
+    return np.vectorize(lambda row: " ".join(row))(col)
+
+
+
+### Lemmatizer
+def lemmatize_row(lemmatizer, row):
+    return [lemmatizer.lemmatize(word) for word in row]
+    
+def lemmatize_col(col):
+    lemmatizer = WordNetLemmatizer()
+    helper =  lambda row: lemmatize_row(lemmatizer, row)
+    return [helper(row) for row in col]
+
+
+### Similar to lemmatization, replaces abbreviations/etc with actual words
+
+def make_word_sub(word):
+    # Object of things that need swapped. Each tuple (a, b) inside the list
+    #   means to replace "a" with "b"
+    # TODO: Maybe use a hashmap here?
+    matchers = [("tho", "though"),
+                ("govt?", "government"),
+                ("pl[sz]", "please"),
+                ("(ha)+", "ha"),
+                ("shou+l?d+", "should"),
+                ("yrs?", "year"),
+                ("wtf", "fuck"),
+                ("m", "meter"),
+                ]
+    
+    
+    for match in matchers:
+        if re.fullmatch(match[0], word):
+            return match[1]
+        
+    return word
+    
+
+def make_word_subs_row(row):
+    return [make_word_sub(word) for word in row]
+
+def make_word_subs_col(col):
+    return [make_word_subs_row(row) for row in col]
+
+
+
+
+# This tokenizes the data
 def single_unigram(row):
     row_list = row.split(" ")
     return row_list
@@ -61,6 +135,7 @@ def single_unigram(row):
 def vectorized_single_unigrams(col):
     # return np.vectorize(single_unigram)(col) #TODO: fix setting an array element with sequence
     return [single_unigram(c) for c in col]
+
 
 
 ### Theis set of functions replaces certain elements with spaces or deletes them
@@ -91,16 +166,16 @@ def vec_no_space_replacements(col):
 
 def vec_remove_stops(col):
     
-    stop_words_list = ["(?=[\W\Z])" + "the", 
-                       "a", 
-                       "an" + "(?<=[\W\A])"]
+    stop_words_list = ["(?=\W)" + "the", 
+                       "a",
+                       "an" + "(?<=\W)"]
     
     # Take list and turn into string which can be used for regex pattern matching
     #   The "|" means "or"
     #   The stuff in parentheses says "I want to match the word 'an' not any 
     #       time I see 'an' together inside a word"
     #       (for example, dont remove 'an' from 'any')
-    stop_words_str = "(?=[\W\Z])|(?<=[\W\A])".join(stop_words_list)
+    stop_words_str = "(?=\W)|(?<=\W)".join(stop_words_list)
     
     pat = re.compile(stop_words_str) 
     
@@ -132,12 +207,6 @@ def create_vectorized_column(col):
     #TODO: Make sure to return vectorizer at some point 
     return vec_col, vectorizer
 
-def save_data(df, f_name):
-    # TODO: implement this in a data_prep_func file
-    # This can be used to save preprocessed data
-    path = "..\\data\\"
-    
-    return
 
 
 def create_trainable_feature(df, col = "clean_text"):
@@ -146,8 +215,12 @@ def create_trainable_feature(df, col = "clean_text"):
     return df
 
 
+# Splits data into train, test and validation. 
+# TODO: Let user determine split
 def train_test_val_split(df, random_state= 9632, targ = "category"):
     # Using random state in order to be deterministically random
+    df = df.dropna()
+    
     train, test = train_test_split(df, 
                                    test_size=0.4, 
                                    random_state= 9632, 
@@ -169,11 +242,11 @@ def train_test_val_split(df, random_state= 9632, targ = "category"):
 
 
 #Testing my functions
-df = get_data("Twitter_Data")
+#df = get_data("Twitter_Data")
 
-df = df.dropna()
+#df = df.dropna()
 
-train_df, test_df, val_df = train_test_val_split(df)
+#train_df, test_df, val_df = train_test_val_split(df)
 
 #head_df = df.head(5000)
 
@@ -186,3 +259,6 @@ train_df, test_df, val_df = train_test_val_split(df)
 
 
 #cleaner_df = clean_df(head_df)
+
+
+#save_data(cleaner_df, "clean_test.csv")
