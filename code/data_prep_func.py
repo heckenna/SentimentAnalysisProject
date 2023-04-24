@@ -214,7 +214,7 @@ def train_vectorizer_and_vectorize_column(col):
 
 
 def create_trainable_feature(df, col = "clean_text"):
-    df["feature"] = create_vectorized_column(df["clean_text"])
+    df["feature"], vec = create_vectorized_column(df["clean_text"])
     
     return df
 
