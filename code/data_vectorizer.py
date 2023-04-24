@@ -22,11 +22,15 @@ val_df = dpf.get_data("initial_val_unvectorized")
 train_df["feature"], vec = dpf.train_vectorizer_and_vectorize_column(train_df["vectorizable_text"])
 test_df["feature"] = dpf.vectorize_col(test_df["vectorizable_text"], vec)
 val_df["feature"] = dpf.vectorize_col(val_df["vectorizable_text"], vec)
-
+#'''
 
 # Save data
-dpf.save_data(train_df, "initial_train_vectorized.csv")
-dpf.save_data(test_df, "initial_test_vectorized.csv")
-dpf.save_data(val_df, "initial_val_vectorized.csv")
+print("Saving data")
+print("Saving train")
+dpf.save_data(train_df.drop(columns = "vectorizable_text"), "initial_train_vectorized.csv")
+print("Saving test")
+dpf.save_data(test_df.drop(columns = "vectorizable_text"), "initial_test_vectorized.csv")
+print("Saving val")
+dpf.save_data(val_df.drop(columns = "vectorizable_text"), "initial_val_vectorized.csv")
 
  

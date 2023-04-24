@@ -6,7 +6,7 @@ Created on Fri Apr 21 09:19:55 2023
 """
 
 # The main code to run will wrap the code in this file in a "main" function 
-import data_prep_func
+import data_prep_func as dpf
 import data_model_func 
 import numpy as np
 
@@ -59,10 +59,12 @@ def goodness_of_fit():
 
 
 # Get data
-data = data_prep_func.get_data("initial_train_vectorized")
+data = dpf.get_data("initial_train_vectorized")
 
 # TODO: remove this. Just making sure the rest runs.
 train_data = data.head(100)
+
+features, vec = dpf.train_vectorizer_and_vectorize_column(train_data["clean_text"])
 
 
 #data = data_prep_func.create_trainable_feature(data)
@@ -79,10 +81,10 @@ train_data = data.head(100)
 
 
 # Run model on data
-model = data_model_func.create_and_train_model(train_data["feature"], list(map(int,train_data["category"])))
+model = data_model_func.create_and_train_model(features.toarray(), train_data["category"])
 
 # Predict on train-test (val)
-train_preds = data_model_func.model_predict(model, train_data)
+train_preds = data_model_func.model_predict(model, features.toarray())
 #test_preds = model_predict(model, test_data)
 #val_preds = model_predict(model, val_data)
 
