@@ -127,7 +127,7 @@ def make_word_subs_col(col):
 
 
 
-# This tokenizes the data
+### This tokenizes the data
 def single_unigram(row):
     row_list = row.split(" ")
     return row_list
@@ -136,7 +136,16 @@ def vectorized_single_unigrams(col):
     # return np.vectorize(single_unigram)(col) #TODO: fix setting an array element with sequence
     return [single_unigram(c) for c in col]
 
-
+# No need. Vectorizer does that for us... breaking into list for preprocessing is good though...
+def n_grams(col, n = 1):
+    # TODO implement this in a data_prep_func file
+    # Note: Start with unigrams
+    unigrams = vectorized_single_unigrams(col)
+    
+    if n == 1:
+        return unigrams
+    
+    return # TODO: n>1
 
 ### Theis set of functions replaces certain elements with spaces or deletes them
 def do_replacements(row_text, replacement, pat):
@@ -185,27 +194,22 @@ def vec_remove_stops(col):
     return vec_func(col)
 
 
-# No need. Vectorizer does that for us... breaking into list for preprocessing is good though...
-def n_grams(col, n = 1):
-    # TODO implement this in a data_prep_func file
-    # Note: Start with unigrams
-    unigrams = vectorized_single_unigrams(col)
-    
-    if n == 1:
-        return unigrams
-    
-    return # TODO: n>1
 
-def create_vectorized_column(col):
+def vectorize_col(col, vectorizer):
+    return vectorizer.transform(col)
+
+def train_vectorizer_and_vectorize_column(col):
     # TODO implement this in a data_prep_func file
     # Note: vectorizer needs to be trained on only training data
     # Note: Start with count vectorizer for simplicity sake, but probably want
     #   to see if word2vec or glove does better
-    vectorizer = CountVectorizer() #TfidfVectorizer()
+    vectorizer = CountVectorizer() 
+    #vectorizer = TfidfVectorizer()
     vec_col = vectorizer.fit_transform(col)
     
     #TODO: Make sure to return vectorizer at some point 
     return vec_col, vectorizer
+
 
 
 
