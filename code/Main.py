@@ -9,6 +9,7 @@ Created on Fri Apr 21 09:19:55 2023
 import data_prep_func as dpf
 import data_model_func 
 import numpy as np
+import performance_metrics as pm
 
 ### These need to be in data_prep_func
 def get_data(filename):
@@ -87,11 +88,14 @@ model = data_model_func.create_and_train_model(features.toarray(), train_data["c
 train_preds = data_model_func.model_predict(model, features.toarray())
 #test_preds = model_predict(model, test_data)
 #val_preds = model_predict(model, val_data)
-
+ 
 # Evaluation metrics
 #goodness_of_fit(train_preds, train_targs)
 
 #foo
+#confusion matrix
+conf_mx=pm.confusion_mx(features, train_data["category"], train_preds)
+print(conf_mx)
 
 
 

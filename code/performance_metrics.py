@@ -10,14 +10,16 @@ from sklearn import metrics
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 
-def confusion_mx(x, y, y_pred, numcl):
+
+def confusion_mx(x, y, y_pred):
     # Get Labels for number of classes 1-numclasses
-    labels = list(range(1,numcl+1))
+    labels = y.unique()
     # Get confusion matrix using y=actual and y_pred=predicted
-    confusion_mx = confusion_matrix(y, y_pred)
-    cm_display = ConfusionMatrixDisplay(confusion_mx = confusion_mx, 
-                                                display_labels = list(labels))
+    confusionmx = confusion_matrix(y, y_pred)
+    cm_display = ConfusionMatrixDisplay(confusionmx, 
+                                        display_labels = list(labels))
     cm_display.plot()
     plt.show()
     return cm_display
