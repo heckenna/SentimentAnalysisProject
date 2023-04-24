@@ -23,6 +23,8 @@ from nltk.stem.wordnet import WordNetLemmatizer
 
 
 # cd D:\\DDox\\Statistical Learning\\Project\\SentimentAnalysisProject\\code
+# cd C:\\Users egc0021\\Documents\\Github\\SentimentAnalysisProject\\code
+
 
 # Functions for data preperation
 
@@ -212,7 +214,7 @@ def train_vectorizer_and_vectorize_column(col):
 
 
 
-
+# TODO
 def create_trainable_feature(df, col = "clean_text"):
     df["feature"], vec = train_vectorizer_and_vectorize_column(df["clean_text"])
     
