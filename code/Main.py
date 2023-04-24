@@ -7,6 +7,8 @@ Created on Fri Apr 21 09:19:55 2023
 
 # The main code to run will wrap the code in this file in a "main" function 
 import data_prep_func
+import data_model_func 
+import numpy as np
 
 ### These need to be in data_prep_func
 def get_data(filename):
@@ -24,17 +26,7 @@ def n_grams(data, n = 1):
     # Note: Start with unigrams
     return
 
-def create_vectorized_column(data):
-    # TODO implement this in a data_prep_func file
-    # Note: vectorizer needs to be trained on only training data
-    # Note: Start with count vectorizer for simplicity sake, but probably want
-    #   to see if word2vec or glove does better
-    return
 
-def save_data(df, filename):
-    # TODO: implement this in a data_prep_func file
-    # This can be used to save preprocessed data
-    return
 
 
 ### These need to be in data_model_func
@@ -67,13 +59,13 @@ def goodness_of_fit():
 
 
 # Get data
-data = data_prep_func.get_data("Twitter_Data")
+data = data_prep_func.get_data("initial_train_vectorized")
 
 # TODO: remove this. Just making sure the rest runs.
-data = data.head(100)
+train_data = data.head(100)
 
 
-data = data_prep_func.create_trainable_feature(data)
+#data = data_prep_func.create_trainable_feature(data)
 # TBH, probably want to preprocess in a different file and save
 
 # Clean data
@@ -85,16 +77,17 @@ data = data_prep_func.create_trainable_feature(data)
 # Vectorize n_grams (Probably count at first)
 #data = create_vectorized_column(data)
 
+
 # Run model on data
-model = create_and_train_model(train_data["vac_column"], train_data["targ"])
+model = data_model_func.create_and_train_model(train_data["feature"], list(map(int,train_data["category"])))
 
 # Predict on train-test (val)
-train_preds = predict(model, train_data)
-test_preds = predict(model, test_data)
-val_preds = predict(model, val_data)
+train_preds = data_model_func.model_predict(model, train_data)
+#test_preds = model_predict(model, test_data)
+#val_preds = model_predict(model, val_data)
 
 # Evaluation metrics
-goodness_of_fit(train_preds, train_targs)
+#goodness_of_fit(train_preds, train_targs)
 
 #foo
 
