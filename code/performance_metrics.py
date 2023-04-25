@@ -18,8 +18,21 @@ def confusion_mx(y, y_pred):
     labels = y.unique()
     # Get confusion matrix using y=actual and y_pred=predicted
     confusionmx = confusion_matrix(y, y_pred)
-    cm_display = ConfusionMatrixDisplay(confusionmx, 
-                                        display_labels = list(labels))
+    
+    # I want to make the cm label in order [-1, 0, 1] so I am tranforming cm
+    index_neg1 = np.where(labels == -1)[0][0]
+    index_0 = np.where(labels == 0)[0][0]
+    index_1 = np.where(labels == 1)[0][0]
+    
+    ordered_index = [index_neg1, index_0, index_1]
+    transformed_cm = np.array([[confusionmx[i][j] for j in ordered_index] for i in ordered_index])
+    
+    #cm_display = ConfusionMatrixDisplay(confusionmx, 
+    #                                    display_labels = list(labels))
+    labels = list(labels)
+    labels.sort()
+    cm_display = ConfusionMatrixDisplay(transformed_cm, 
+                                        display_labels = labels)
     cm_display.plot()
     plt.show()
     return cm_display
