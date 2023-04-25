@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-
+from sklearn.neural_network import MLPClassifier
 
 def create_model(model_type = "rf", nest=200, md=20, mss=20, msl=10):
     # Refactoring to make training different models easier.
@@ -26,6 +26,12 @@ def create_model(model_type = "rf", nest=200, md=20, mss=20, msl=10):
                                            max_depth=md,
                                            min_samples_split=mss, 
                                            min_samples_leaf=msl)
+    elif model_type == "nn":
+        model= MLPClassifier(solver='lbfgs', 
+                             alpha=1e-5,
+                             hidden_layer_sizes=(10, 10), 
+                             random_state=1)
+    
     return model 
 
 

@@ -25,7 +25,7 @@ import time
 #   Take a look at data to see what is going on
 #   Probably some of the summary code could be written in order to do EDA
 
-
+'''
 # Get data
 print("Getting Data")
 f_type = "parquet"
@@ -44,7 +44,7 @@ val_df.drop(columns = ["clean_text", "CATEGORY"], inplace = True)
 
 
 # Train model
-m_t = "gb"
+m_t = "nn"
 print("Training model")
 print("Type:", m_t)
 start = time.time()

@@ -17,7 +17,7 @@ from sklearn.metrics import classification_report
 
 def confusion_mx(y, y_pred):
     # Get Labels for number of classes 1-numclasses
-    labels = y.unique()
+    labels = pd.Series(y_pred).unique()
     # Get confusion matrix using y=actual and y_pred=predicted
     confusionmx = confusion_matrix(y, y_pred)
     
@@ -29,8 +29,8 @@ def confusion_mx(y, y_pred):
     ordered_index = [index_neg1, index_0, index_1]
     transformed_cm = np.array([[confusionmx[i][j] for j in ordered_index] for i in ordered_index])
     
-    #cm_display = ConfusionMatrixDisplay(confusionmx, 
-    #                                    display_labels = list(labels))
+    cm_display = ConfusionMatrixDisplay(confusionmx, 
+                                        display_labels = list(labels))
     labels = list(labels)
     labels.sort()
     cm_display = ConfusionMatrixDisplay(transformed_cm, 
@@ -45,7 +45,7 @@ def r_2(y, y_pred):
 def summary(y, y_pred):
     confusion_mx(y, y_pred)
     
-    print(classification_report(y, y_pred), labels = y.unique())
+    print(classification_report(y, y_pred, labels = y.unique()))
     #print("Accuracy:", sum(y == y_pred)/len(y))
     
     #print("R^2:", r_2(y, y_pred))
