@@ -12,7 +12,8 @@ from sklearn.metrics import r2_score
 import matplotlib as plt
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
 
 def confusion_mx(y, y_pred):
     # Get Labels for number of classes 1-numclasses
@@ -43,6 +44,8 @@ def r_2(y, y_pred):
 
 def summary(y, y_pred):
     confusion_mx(y, y_pred)
-    print("Accuracy:", sum(y == y_pred)/len(y))
     
-    print("R^2:", r_2(y, y_pred))
+    print(classification_report(y, y_pred), labels = y.unique())
+    #print("Accuracy:", sum(y == y_pred)/len(y))
+    
+    #print("R^2:", r_2(y, y_pred))
