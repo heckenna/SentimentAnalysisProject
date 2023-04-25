@@ -8,6 +8,7 @@ import numpy as np
 import sklearn
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import r2_score
 import matplotlib as plt
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -36,3 +37,12 @@ def confusion_mx(y, y_pred):
     cm_display.plot()
     plt.show()
     return cm_display
+
+def r_2(y, y_pred):
+    return r2_score(y, y_pred)
+
+def summary(y, y_pred):
+    confusion_mx(y, y_pred)
+    print("Accuracy:", sum(y == y_pred)/len(y))
+    
+    print("R^2:", r_2(y, y_pred))

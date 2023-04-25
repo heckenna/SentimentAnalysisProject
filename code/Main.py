@@ -33,34 +33,24 @@ train_df = dpf.get_data("initial_train_vectorized", f_type)
 test_df = dpf.get_data("initial_test_vectorized", f_type)
 val_df = dpf.get_data("initial_val_vectorized", f_type)
 
-train_feat = train_df.drop(columns = ["clean_text", "CATEGORY"])
-test_feat = test_df.drop(columns = ["clean_text", "CATEGORY"])
-val_feat = val_df.drop(columns = ["clean_text", "CATEGORY"])
-
 train_targ = train_df["CATEGORY"]
 test_targ = test_df["CATEGORY"]
 val_targ = val_df["CATEGORY"]
 
-'''
-# TODO: remove this. Just making sure the rest runs.
-train_data = data #.head(80000)
-
-train_data = train_data.rename(columns={"category": "CATEGORY"})
-#features, vec = dpf.train_vectorizer_and_vectorize_column(train_data["vectorizable_text"])
-start = time.time()
-train_data, vec = dpf.create_trainable_feature(train_data, col_name  = "vectorizable_text")
-end = time.time()
-tot = end - start
-print("Vectorization in", tot, "seconds.")
-
-print("Saving data")
-dpf.save_data(train_data, "size_checker")
+train_df.drop(columns = ["clean_text", "CATEGORY"], inplace = True)
+test_df.drop(columns = ["clean_text", "CATEGORY"], inplace = True)
+val_df.drop(columns = ["clean_text", "CATEGORY"], inplace = True)
 #'''
 
-# Train model
-print("Training model")
-model = dmf.create_and_train_model(train_feat, train_targ)
 
+# Train model
+m_t = "gb"
+print("Training model")
+print("Type:", m_t)
+start = time.time()
+model = dmf.create_and_train_model(train_df, train_targ, model_type = m_t)
+end  = time.time()
+print("Trained in", end - start, "seconds.")
 
 # TBH, probably want to preprocess in a different file and save
 
@@ -79,17 +69,18 @@ model = dmf.create_and_train_model(train_feat, train_targ)
 
 # Predict on train-test (val)
 print("Predicting with model")
-train_preds = dmf.model_predict(model, train_feat)
-test_preds = dmf.model_predict(model, test_feat)
-val_preds = dmf.model_predict(model, val_feat)
+train_preds = dmf.model_predict(model, train_df)
+test_preds = dmf.model_predict(model, test_df)
+val_preds = dmf.model_predict(model, val_df)
  
 # Evaluation metrics
 #goodness_of_fit(train_preds, train_targs)
 
 #foo
 #confusion matrix
-conf_mx=pm.confusion_mx(train_targ, train_preds)
-print(conf_mx)
+train_conf_mx = pm.summary(train_targ, train_preds)
+test_conf_mx = pm.summary(test_targ, test_preds)
+#print(conf_mx)
 
 
 
