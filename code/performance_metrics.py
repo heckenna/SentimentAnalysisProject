@@ -13,7 +13,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def confusion_mx(x, y, y_pred):
+def confusion_mx(y, y_pred):
     # Get Labels for number of classes 1-numclasses
     labels = y.unique()
     # Get confusion matrix using y=actual and y_pred=predicted

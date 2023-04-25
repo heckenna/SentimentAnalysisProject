@@ -12,7 +12,7 @@ import re
 
 from sklearn.model_selection import train_test_split
 
-# Vectorizer # TODO: Use Tfidf vectorizer
+# Vectorizer # DONE: Use Tfidf vectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer 
 
@@ -29,17 +29,25 @@ from nltk.stem.wordnet import WordNetLemmatizer
 # Functions for data preperation
 
 ### File load or save
-def get_data(f_name): # = "Twitter_Data"):
+def get_data(f_name, f_type = "csv"): # = "Twitter_Data"):
     path = "..\\data\\"
     
-    df = pd.read_csv(path + f_name + ".csv", sep = ",")    
+    if f_type == "parquet":
+        df = pd.read_parquet(path + f_name + ".parquet")
+    elif f_type == "csv":  
+       df = pd.read_csv(path + f_name + ".csv", sep = ",")
+        
     return df
 
-def save_data(df, f_name):
+def save_data(df, f_name, f_type = "csv"):
     path = "..\\data\\"
     
-    df.to_csv(path + f_name, index = False)
-    return df
+    if f_type == "parquet":
+        df.to_parquet(path + f_name + ".parquet", index = False)
+    elif f_type == "csv":
+        df.to_csv(path + f_name, index = False)
+    
+    return df # Why is save returning the df?
 
 # Need to clean the dataframe and create a column that is ready to be vectorized
 # This will probably take a while to run, so make sure to save cleaned data
@@ -50,7 +58,7 @@ def clean_df(df, text_col = "clean_text"):
     #TODO: Need to drop empty strings as well
     
     
-    # TODO: Deal with word forms & abbreviations
+    # DONE: Deal with word forms & abbreviations
     
     df["vectorizable_text"] = clean_feature_col(df[text_col])
     
@@ -110,6 +118,24 @@ def make_word_sub(word):
                 ("yrs?", "year"),
                 ("wtf", "fuck"),
                 ("m", "meter"),
+                ("modi+j*s?", "modi"),
+                ("[a-z]*[0-9]+[a-z]*", " "),
+                ("youre", "you are"),
+                ("us(ed)?(ing)?e?", "use"),
+                ("try?(ing)?(ied)?", "try"),
+                ("thats", "that is"),
+                ("tak(en)?(ing)?e?", "take"),
+                ("successful(ly)?", "successful"),
+                ("stop(ped)?(ping)?", "stop"),
+                ("start(ed)?(ing)?", "start"),
+                ("spread(ing)?", "spread"),
+                ("spe(ak(ing)?s?|oke)", "speak"),
+                ("isnt?", "is not"),
+                ("happen(ed)?s?", "happen"),
+                ("follow(ing)?(ed)?", "follow"),
+                ("doesnt?", "does not"),
+                ("didnt?", "did not"),
+                ("demonetis?z?e?(ation)?", "demonetize"),
                 ]
     
     
@@ -135,19 +161,18 @@ def single_unigram(row):
     return row_list
 
 def vectorized_single_unigrams(col):
-    # return np.vectorize(single_unigram)(col) #TODO: fix setting an array element with sequence
+    # return np.vectorize(single_unigram)(col) #DONE: fix setting an array element with sequence
     return [single_unigram(c) for c in col]
 
 # No need. Vectorizer does that for us... breaking into list for preprocessing is good though...
 def n_grams(col, n = 1):
-    # TODO implement this in a data_prep_func file
     # Note: Start with unigrams
     unigrams = vectorized_single_unigrams(col)
     
     if n == 1:
         return unigrams
     
-    return # TODO: n>1
+    return # TO DO: n>1 - No need
 
 ### Theis set of functions replaces certain elements with spaces or deletes them
 def do_replacements(row_text, replacement, pat):
@@ -201,24 +226,40 @@ def vectorize_col(col, vectorizer):
     return vectorizer.transform(col)
 
 def train_vectorizer_and_vectorize_column(col):
-    # TODO implement this in a data_prep_func file
     # Note: vectorizer needs to be trained on only training data
     # Note: Start with count vectorizer for simplicity sake, but probably want
     #   to see if word2vec or glove does better
-    vectorizer = CountVectorizer() 
-    #vectorizer = TfidfVectorizer()
+    #vectorizer = CountVectorizer(max_features = 5000, min_df = 0.01, max_df = 0.95) 
+    
+    # Ignore something that appears less than 30 times
+    vectorizer = TfidfVectorizer(max_features = 5000, 
+                                 stop_words = "english",
+                                 min_df = 30/len(col), 
+                                 max_df = 0.95,
+                                 ngram_range = (1,2))
     vec_col = vectorizer.fit_transform(col)
     
-    #TODO: Make sure to return vectorizer at some point 
+    
+    #DONE: Make sure to return vectorizer at some point 
     return vec_col, vectorizer
 
 
 
-# TODO
-def create_trainable_feature(df, col = "clean_text"):
-    df["feature"], vec = train_vectorizer_and_vectorize_column(df["clean_text"])
+# DONE. Maybe I should refactor this though.
+def create_trainable_feature(df, col_name = "clean_text", vec = None):
     
-    return df
+        
+    if vec == None:
+        col_fit, vec = train_vectorizer_and_vectorize_column(df[col_name])
+    else:
+        col_fit = vectorize_col(df[col_name], vec)
+        
+        
+    vect_df = pd.DataFrame(col_fit.todense(), columns=vec.get_feature_names())
+    
+    df_result = pd.concat([vect_df, df], axis=1)
+    
+    return df_result, vec
 
 
 # Splits data into train, test and validation. 
@@ -239,11 +280,11 @@ def train_test_val_split(df, random_state= 9632, targ = "category"):
     
 
 
-# TODO: Train-test-validation split
-# TODO: Remove punctuation and special characters.  - Started, not finished
+# DONE: Train-test-validation split
+# DONE: Remove punctuation and special characters.  - Started, not finished
 # TODO: Build out stop word library
-# TODO: Build up regex for abbreviation. Do I want to use Levenshtein distances?
-# TODO: Save preprocessed data
+# DONE: Build up regex for abbreviation. Do I want to use Levenshtein distances?- No
+# DONE: Save preprocessed data
 
 
 

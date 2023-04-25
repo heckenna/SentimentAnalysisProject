@@ -7,44 +7,11 @@ Created on Fri Apr 21 09:19:55 2023
 
 # The main code to run will wrap the code in this file in a "main" function 
 import data_prep_func as dpf
-import data_model_func 
+import data_model_func as dmf
 import numpy as np
 import performance_metrics as pm
+import time
 
-### These need to be in data_prep_func
-def get_data(filename):
-    path = ""
-    #TODO implement this in a data_prep_func fie
-    return
-
-def clean_data(data):
-    # TODO implement this in a data_prep_func file
-    # Probably need to remove stop words and have abbreviation library
-    return
-
-def n_grams(data, n = 1):
-    # TODO implement this in a data_prep_func file
-    # Note: Start with unigrams
-    return
-
-
-
-
-### These need to be in data_model_func
-def create_and_train_model(train_features, train_targs):
-    # TODO: implement this in a data_model_func file
-    # Note: Probably want a "train_model" function, 
-    #   probably want a "create_model" function as well
-    return
-
-def model_predict(model, train_data):
-    # TODO: implement
-    return
-
-### These need implemented in a summary file
-def goodness_of_fit():
-    #TODO: implement
-    return
 
 
 ###############################################
@@ -60,15 +27,41 @@ def goodness_of_fit():
 
 
 # Get data
-data = dpf.get_data("initial_train_vectorized")
+print("Getting Data")
+f_type = "parquet"
+train_df = dpf.get_data("initial_train_vectorized", f_type)
+test_df = dpf.get_data("initial_test_vectorized", f_type)
+val_df = dpf.get_data("initial_val_vectorized", f_type)
 
+train_feat = train_df.drop(columns = ["clean_text", "CATEGORY"])
+test_feat = test_df.drop(columns = ["clean_text", "CATEGORY"])
+val_feat = val_df.drop(columns = ["clean_text", "CATEGORY"])
+
+train_targ = train_df["CATEGORY"]
+test_targ = test_df["CATEGORY"]
+val_targ = val_df["CATEGORY"]
+
+'''
 # TODO: remove this. Just making sure the rest runs.
-train_data = data.head(100)
+train_data = data #.head(80000)
 
-features, vec = dpf.train_vectorizer_and_vectorize_column(train_data["clean_text"])
+train_data = train_data.rename(columns={"category": "CATEGORY"})
+#features, vec = dpf.train_vectorizer_and_vectorize_column(train_data["vectorizable_text"])
+start = time.time()
+train_data, vec = dpf.create_trainable_feature(train_data, col_name  = "vectorizable_text")
+end = time.time()
+tot = end - start
+print("Vectorization in", tot, "seconds.")
+
+print("Saving data")
+dpf.save_data(train_data, "size_checker")
+#'''
+
+# Train model
+print("Training model")
+model = dmf.create_and_train_model(train_feat, train_targ)
 
 
-#data = data_prep_func.create_trainable_feature(data)
 # TBH, probably want to preprocess in a different file and save
 
 # Clean data
@@ -82,19 +75,20 @@ features, vec = dpf.train_vectorizer_and_vectorize_column(train_data["clean_text
 
 
 # Run model on data
-model = data_model_func.create_and_train_model(features.toarray(), train_data["category"])
+#model = data_model_func.create_and_train_model(features.toarray(), train_data["category"])
 
 # Predict on train-test (val)
-train_preds = data_model_func.model_predict(model, features.toarray())
-#test_preds = model_predict(model, test_data)
-#val_preds = model_predict(model, val_data)
+print("Predicting with model")
+train_preds = dmf.model_predict(model, train_feat)
+test_preds = dmf.model_predict(model, test_feat)
+val_preds = dmf.model_predict(model, val_feat)
  
 # Evaluation metrics
 #goodness_of_fit(train_preds, train_targs)
 
 #foo
 #confusion matrix
-conf_mx=pm.confusion_mx(features, train_data["category"], train_preds)
+conf_mx=pm.confusion_mx(train_targ, train_preds)
 print(conf_mx)
 
 
