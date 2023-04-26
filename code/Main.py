@@ -44,7 +44,7 @@ val_df.drop(columns = ["clean_text", "CATEGORY"], inplace = True)
 
 
 # Train model
-m_t = "nn"
+m_t = "rf"
 print("Training model")
 print("Type:", m_t)
 start = time.time()

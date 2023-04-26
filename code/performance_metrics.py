@@ -18,11 +18,10 @@ from sklearn.metrics import classification_report
 def confusion_mx(y, y_pred):
     # Get Labels for number of classes 1-numclasses
     labels = pd.Series(y).unique()
-    """
     # I was a fool
     # Get confusion matrix using y=actual and y_pred=predicted
     confusionmx = confusion_matrix(y, y_pred)
-    
+    """
     # I want to make the cm label in order [-1, 0, 1] so I am tranforming cm
     index_neg1 = np.where(labels == -1)[0][0]
     index_0 = np.where(labels == 0)[0][0]
